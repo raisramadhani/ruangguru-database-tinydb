@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1024">
+    <title>Quiz Penyimpanan Data (TinyDB)</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: sans-serif;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .header-title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-desc {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .hero-image {
+            display: block;
+            max-width: 100%;
+            margin: 0 auto 30px auto;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .question-card {
+            border: 1px solid #cccccc;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        .question-text {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+
+        .option-label input {
+            margin-right: 10px;
+            margin-top: 3px;
+        }
+
+        .option-text {
+            display: inline-block;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .btn-submit {
+            background-color: #2563eb;
+            color: #ffffff;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn-submit:hover {
+            background-color: #1d4ed8;
+        }
+
+        .app-block-event {
+            background-color: #ca8a04;
+            color: white;
+            padding: 15px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            border-bottom-left-radius: 4px;
+            border-left: 10px solid #a16207;
+            font-family: monospace;
+            font-size: 1rem;
+            width: fit-content;
+            margin: 15px 0;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .app-block-method {
+            background-color: #7e22ce;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            display: inline-flex;
+            flex-direction: column;
+            border-left: 4px solid #581c87;
+            margin-top: 10px;
+            margin-left: 20px;
+        }
+
+        .app-block-text {
+            background-color: #db2777;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            border-left: 4px solid #9d174d;
+            margin-left: 10px;
+        }
+
+        .app-block-math {
+            background-color: #2563eb;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            border-left: 4px solid #1e3a8a;
+            margin-left: 10px;
+        }
+
+        .app-block-var {
+            background-color: #16a34a;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-left: 10px;
+            border-left: 4px solid #14532d;
+        }
+
+        .app-block-row {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+            margin-left: 15px;
+        }
+
+        .app-block-label {
+            font-weight: bold;
+            font-size: 0.9rem;
+            min-width: 140px;
+            opacity: 0.9;
+        }
+
+        .jumping-bunny,
+        .walking-bunny {
+            position: fixed;
+            width: 55px;
+            height: 65px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom center;
+            z-index: 100;
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .jumping-bunny {
+            bottom: 0;
+            left: 85%;
+            animation: gerakLompat 1.2s cubic-bezier(0.28, 0.84, 0.42, 1) infinite, gantiGambarLompat 1.2s infinite;
+        }
+
+        .walking-bunny {
+            bottom: 0;
+            left: 70%;
+            animation: patroliKanan 6s linear infinite, gantiKakiJalan 0.3s infinite;
+        }
+
+        @keyframes gerakLompat {
+
+            0%,
+            15% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-35px);
+            }
+
+            85%,
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes gantiGambarLompat {
+
+            0%,
+            14% {
+                background-image: url('images/bunny1_ready.png');
+            }
+
+            15%,
+            84% {
+                background-image: url('images/bunny1_jump.png');
+            }
+
+            85%,
+            100% {
+                background-image: url('images/bunny1_ready.png');
+            }
+        }
+
+        @keyframes patroliKanan {
+            0% {
+                transform: translateX(0) scaleX(1);
+            }
+
+            48% {
+                transform: translateX(60px) scaleX(1);
+            }
+
+            50% {
+                transform: translateX(60px) scaleX(-1);
+            }
+
+            98% {
+                transform: translateX(0) scaleX(-1);
+            }
+
+            100% {
+                transform: translateX(0) scaleX(1);
+            }
+        }
+
+        @keyframes gantiKakiJalan {
+
+            0%,
+            49% {
+                background-image: url('images/bunny2_walk1.png');
+            }
+
+            50%,
+            100% {
+                background-image: url('images/bunny2_walk2.png');
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1 class="header-title">Quiz: Penyimpanan Data (TinyDB)</h1>
+        <p class="header-desc">Pelajari blok TinyDB di bawah ini lalu jawablah 16 pertanyaan dengan tepat. Pilih opsi
+            yang tersedia, centang kotak yang sesuai, atau ketik jawaban singkat Anda.</p>
+
+        <img src="images/tinydb.png" alt="Blok TinyDB" class="hero-image">
+
+        <form onsubmit="event.preventDefault();">
+
+            <div class="question-card">
+                <p class="question-text">1. Apa fungsi utama dari komponen TinyDB di App Inventor?</p>
+                <label class="option-label"><input type="radio" name="q1" value="A"><span class="option-text">A.
+                        Menyimpan data sementara yang akan hilang saat aplikasi ditutup.</span></label>
+                <label class="option-label"><input type="radio" name="q1" value="B"><span class="option-text">B.
+                        Menyimpan data secara permanen langsung di dalam memori HP pengguna.</span></label>
+                <label class="option-label"><input type="radio" name="q1" value="C"><span class="option-text">C.
+                        Menyambungkan aplikasi dengan database server di internet.</span></label>
+                <label class="option-label"><input type="radio" name="q1" value="D"><span class="option-text">D.
+                        Menghapus semua data dari aplikasi pengguna.</span></label>
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">2. Sifat penyimpanan "Variable" diibaratkan seperti jenis memori apa pada
+                    komputer, yang mana datanya akan langsung lenyap saat aplikasi ditutup?</p>
+                <input type="text" name="q2" class="text-input"
+                    placeholder="Tuliskan nama jenis memori tersebut (3 huruf)...">
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">3. Untuk memasukkan TinyDB ke dalam tampilan aplikasi, kita harus mencarinya
+                    pada Palette MIT App Inventor. Di laci (drawer) kategori manakah TinyDB berada?</p>
+                <input type="text" name="q3" class="text-input" placeholder="Tuliskan nama laci/kategorinya...">
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">4. TinyDB termasuk ke dalam jenis komponen "Non-Visible" di MIT App Inventor.
+                    Apa maksud dari komponen Non-Visible?</p>
+                <label class="option-label"><input type="radio" name="q4" value="A"><span class="option-text">A.
+                        Komponennya transparan dan tidak bisa diklik.</span></label>
+                <label class="option-label"><input type="radio" name="q4" value="B"><span class="option-text">B.
+                        Komponennya bekerja di balik layar dan tidak memiliki wujud tampilan di layar aplikasi
+                        pengguna.</span></label>
+                <label class="option-label"><input type="radio" name="q4" value="C"><span class="option-text">C.
+                        Komponennya hanya bisa dilihat oleh pembuat program.</span></label>
+                <label class="option-label"><input type="radio" name="q4" value="D"><span class="option-text">D.
+                        Komponennya membutuhkan password untuk dapat digunakan.</span></label>
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">5. Perhatikan susunan blok program berikut ini:</p>
+
+                <div class="app-block-event">
+                    when Button_Simpan.Click do
+                    <div class="app-block-method">
+                        <span>call TinyDB1.StoreValue</span>
+                        <div class="app-block-row">
+                            <span class="app-block-label">tag</span>
+                            <span class="app-block-text">"NamaPengguna"</span>
+                        </div>
+                        <div class="app-block-row">
+                            <span class="app-block-label">valueToStore</span>
+                            <span class="app-block-var">TB_Nama.Text</span>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="margin-top: 15px;">Apa peran dari socket <b>valueToStore</b> pada blok di atas?</p>
+                <label class="option-label"><input type="radio" name="q5" value="A"><span class="option-text">A. Sebagai
+                        kunci rahasia untuk memanggil data.</span></label>
+                <label class="option-label"><input type="radio" name="q5" value="B"><span class="option-text">B. Sebagai
+                        nama tabel di dalam database.</span></label>
+                <label class="option-label"><input type="radio" name="q5" value="C"><span class="option-text">C. Sebagai
+                        isi data atau barang nyata yang ingin kita simpan ke dalam database.</span></label>
+                <label class="option-label"><input type="radio" name="q5" value="D"><span class="option-text">D. Sebagai
+                        pesan error jika database penuh.</span></label>
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">6. Saat membuat aplikasi, blok mana yang harus kita gunakan jika kita ingin
+                    mengambil atau menarik data yang sudah tersimpan di TinyDB?</p>
+                <label class="option-label"><input type="radio" name="q6" value="A"><span class="option-text">A. call
+                        TinyDB1.StoreValue</span></label>
+                <label class="option-label"><input type="radio" name="q6" value="B"><span class="option-text">B. call
+                        TinyDB1.GetValue</span></label>
+                <label class="option-label"><input type="radio" name="q6" value="C"><span class="option-text">C. call
+                        TinyDB1.ClearTag</span></label>
+                <label class="option-label"><input type="radio" name="q6" value="D"><span class="option-text">D. set
+                        TinyDB1.Tag to</span></label>
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">7. Perhatikan struktur blok penarik data berikut:</p>
+
+                <div class="app-block-method" style="margin-left: 0; background-color: #7e22ce;">
+                    <span>call TinyDB1.GetValue</span>
+                    <div class="app-block-row">
+                        <span class="app-block-label">tag</span>
+                        <span class="app-block-text">"SkorTertinggi"</span>
+                    </div>
+                    <div class="app-block-row">
+                        <span class="app-block-label">valueIfTagNotThere</span>
+                        <span class="app-block-text">"0"</span>
+                    </div>
+                </div>
+
+                <p style="margin-top: 15px;">Apa kegunaan dari socket <b>valueIfTagNotThere</b>?</p>
+                <label class="option-label"><input type="radio" name="q7" value="A"><span class="option-text">A. Untuk
+                        mengganti nama tag secara otomatis jika tag awal salah ketik.</span></label>
+                <label class="option-label"><input type="radio" name="q7" value="B"><span class="option-text">B. Sebagai
+                        data cadangan (default) yang ditampilkan jika aplikasi belum pernah menyimpan data sama sekali
+                        di tag tersebut.</span></label>
+                <label class="option-label"><input type="radio" name="q7" value="C"><span class="option-text">C.
+                        Menghapus database jika kondisinya tidak ditemukan.</span></label>
+                <label class="option-label"><input type="radio" name="q7" value="D"><span class="option-text">D. Untuk
+                        melakukan update versi aplikasi secara otomatis.</span></label>
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">8. Manakah saja pernyataan di bawah ini yang benar mengenai karakteristik
+                    TinyDB? (Pilih semua yang sesuai)</p>
+                <label class="option-label"><input type="checkbox" name="q8" value="A"><span class="option-text">A. Data
+                        yang disimpan akan aman dan tidak terhapus meskipun pengguna mematikan
+                        smartphone-nya.</span></label>
+                <label class="option-label"><input type="checkbox" name="q8" value="B"><span class="option-text">B. Satu
+                        komponen TinyDB hanya bisa menyimpan maksimal satu jenis data saja.</span></label>
+                <label class="option-label"><input type="checkbox" name="q8" value="C"><span class="option-text">C. Satu
+                        komponen TinyDB dapat menyimpan banyak data asalkan nama Tag yang digunakan
+                        berbeda-beda.</span></label>
+                <label class="option-label"><input type="checkbox" name="q8" value="D"><span class="option-text">D. Nama
+                        tag yang ditulis saat menyimpan (Store) harus sama persis dengan saat mengambil
+                        (Get).</span></label>
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">9. Kapan waktu (event) yang paling tepat untuk menjalankan perintah blok
+                    TinyDB.GetValue agar skor tinggi atau nama pengguna yang sudah disimpan kemarin otomatis langsung
+                    terlihat begitu aplikasi baru dibuka?</p>
+                <label class="option-label"><input type="radio" name="q9" value="A"><span class="option-text">A. when
+                        Button.Click do</span></label>
+                <label class="option-label"><input type="radio" name="q9" value="B"><span class="option-text">B. when
+                        Screen1.Initialize do</span></label>
+                <label class="option-label"><input type="radio" name="q9" value="C"><span class="option-text">C. when
+                        TextBox.GotFocus do</span></label>
+                <label class="option-label"><input type="radio" name="q9" value="D"><span class="option-text">D. when
+                        Screen1.BackPressed do</span></label>
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">10. Perhatikan dua kejadian penyimpanan data di bawah ini:</p>
+
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;">
+                    <div>
+                        <p style="font-size: 0.9rem; font-weight: bold; color: #64748b; margin-bottom: 5px;">Hari
+                            Pertama:</p>
+                        <div class="app-block-method" style="margin-left: 0; margin-top: 0;">
+                            <span>call TinyDB1.StoreValue</span>
+                            <div class="app-block-row">
+                                <span class="app-block-label">tag</span>
+                                <span class="app-block-text">"Skor"</span>
+                            </div>
+                            <div class="app-block-row">
+                                <span class="app-block-label">valueToStore</span>
+                                <span class="app-block-math">100</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <p style="font-size: 0.9rem; font-weight: bold; color: #64748b; margin-bottom: 5px;">Hari Kedua:
+                        </p>
+                        <div class="app-block-method" style="margin-left: 0; margin-top: 0;">
+                            <span>call TinyDB1.StoreValue</span>
+                            <div class="app-block-row">
+                                <span class="app-block-label">tag</span>
+                                <span class="app-block-text">"Skor"</span>
+                            </div>
+                            <div class="app-block-row">
+                                <span class="app-block-label">valueToStore</span>
+                                <span class="app-block-math">500</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p>Jika kita menyimpan data dengan Tag "Skor" yang bernilai 100, lalu di hari berikutnya kita
+                    mengeksekusi blok lagi dengan Tag yang persis sama namun Valuenya 500. Apa yang akan terjadi pada
+                    data awal (100) di dalam TinyDB?</p>
+                <input type="text" name="q10" class="text-input"
+                    placeholder="Tuliskan apa yang terjadi pada datanya...">
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">11. Berdasarkan gambar blok referensi di bagian atas, apa nama blok yang
+                    digunakan khusus untuk MEMANGGIL atau MENGAMBIL data dari TinyDB?</p>
+                <label class="option-label"><input type="radio" name="q11" value="A"><span class="option-text">A. call
+                        TinyDB1.StoreValue</span></label>
+                <label class="option-label"><input type="radio" name="q11" value="B"><span class="option-text">B. call
+                        TinyDB1.GetValue</span></label>
+                <label class="option-label"><input type="radio" name="q11" value="C"><span class="option-text">C. call
+                        TinyDB1.ClearTag</span></label>
+                <label class="option-label"><input type="radio" name="q11" value="D"><span class="option-text">D. call
+                        TinyDB1.DeleteAll</span></label>
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">12. Saat menggunakan blok StoreValue maupun GetValue, kita diwajibkan untuk
+                    mengisi socket <b>tag</b>.</p>
+
+                <div class="app-block-method" style="margin-left: 0; margin-bottom: 15px;">
+                    <span>call TinyDB1.StoreValue</span>
+                    <div class="app-block-row">
+                        <span class="app-block-label">tag</span>
+                        <span class="app-block-text"
+                            style="box-shadow: 0 0 0 3px #fde047, 0 0 10px #facc15;">"Koin"</span>
+                    </div>
+                    <div class="app-block-row">
+                        <span class="app-block-label">valueToStore</span>
+                        <span class="app-block-var">global_koin</span>
+                    </div>
+                </div>
+
+                <p>Mengapa pengisian nama pada tag (seperti contoh "Koin" di atas) ini sangat penting bagi database?</p>
+                <label class="option-label"><input type="radio" name="q12" value="A"><span class="option-text">A. Karena
+                        tag berfungsi sebagai kata sandi login aplikasi.</span></label>
+                <label class="option-label"><input type="radio" name="q12" value="B"><span class="option-text">B. Karena
+                        tag menentukan warna background dari aplikasi.</span></label>
+                <label class="option-label"><input type="radio" name="q12" value="C"><span class="option-text">C. Karena
+                        tag adalah label identitas data, sehingga membedakan antara data skor, koin, nama, dan lain-lain
+                        di dalam memori.</span></label>
+                <label class="option-label"><input type="radio" name="q12" value="D"><span class="option-text">D. Karena
+                        tanpa tag, aplikasi tidak bisa di-install ke HP pengguna.</span></label>
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">13. Coba perhatikan blok GetValue di bawah ini:</p>
+
+                <div class="app-block-method" style="margin-left: 0; margin-bottom: 15px;">
+                    <span>call TinyDB1.GetValue</span>
+                    <div class="app-block-row">
+                        <span class="app-block-label">tag</span>
+                        <span class="app-block-text">"SkorTertinggi"</span>
+                    </div>
+                    <div class="app-block-row">
+                        <span class="app-block-label text-yellow-300">valueIfTagNotThere</span>
+                        <span class="app-block-text border-2 border-dashed border-yellow-300 px-3">&nbsp;&nbsp;</span>
+                    </div>
+                </div>
+
+                <p>Apabila pada socket <b>valueIfTagNotThere</b> kita memasang blok teks yang benar-benar kosong, dan
+                    pengguna tersebut baru pertama kali menginstal game ini (belum ada data sama sekali). Apa yang akan
+                    muncul/didapatkan saat blok GetValue ini dipanggil?</p>
+                <label class="option-label"><input type="radio" name="q13" value="A"><span class="option-text">A. Akan
+                        muncul angka 0.</span></label>
+                <label class="option-label"><input type="radio" name="q13" value="B"><span class="option-text">B. Akan
+                        muncul tulisan "Error".</span></label>
+                <label class="option-label"><input type="radio" name="q13" value="C"><span class="option-text">C. Tidak
+                        akan muncul apa-apa (mendapat nilai teks kosong).</span></label>
+                <label class="option-label"><input type="radio" name="q13" value="D"><span class="option-text">D.
+                        Aplikasi akan menutup sendiri.</span></label>
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">14. Apabila kamu ingin menyimpan jumlah koin yang didapatkan pemain ke dalam
+                    TinyDB, maka blok variabel koin tersebut harus ditarik dan dipasangkan (disambungkan) pada socket
+                    apa di dalam blok StoreValue?</p>
+                <label class="option-label"><input type="radio" name="q14" value="A"><span class="option-text">A.
+                        tag</span></label>
+                <label class="option-label"><input type="radio" name="q14" value="B"><span class="option-text">B.
+                        valueToStore</span></label>
+                <label class="option-label"><input type="radio" name="q14" value="C"><span class="option-text">C.
+                        valueIfTagNotThere</span></label>
+                <label class="option-label"><input type="radio" name="q14" value="D"><span class="option-text">D.
+                        GetValue</span></label>
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">15. Jika seorang pemain game merasa skornya terlalu jelek dan menekan tombol
+                    "Reset Skor", blok TinyDB manakah yang secara khusus digunakan untuk menghapus data berdasarkan nama
+                    tag tertentu?</p>
+                <label class="option-label"><input type="radio" name="q15" value="A"><span class="option-text">A. call
+                        TinyDB1.ClearTag</span></label>
+                <label class="option-label"><input type="radio" name="q15" value="B"><span class="option-text">B. call
+                        TinyDB1.ClearAll</span></label>
+                <label class="option-label"><input type="radio" name="q15" value="C"><span class="option-text">C. call
+                        TinyDB1.StoreValue</span></label>
+                <label class="option-label"><input type="radio" name="q15" value="D"><span class="option-text">D. call
+                        TinyDB1.GetValue</span></label>
+            </div>
+
+            <div class="question-card">
+                <p class="question-text">16. Perhatikan gambar blok di bawah ini:</p>
+                <img src="images/soal16.png" alt="Soal 16"
+                    style="max-width: 100%; margin-bottom: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <p style="margin-bottom: 15px;">Berdasarkan nama tag yang digunakan, blok apa yang paling tepat untuk
+                    dipasangkan ke dalam socket <b>valueIfTagNotThere</b>?</p>
+                <label class="option-label"><input type="radio" name="q16" value="A"><span class="option-text">A. <img
+                            src="images/16a.png" alt="Blok Teks Kosong"
+                            style="vertical-align: middle; max-height: 35px; margin-left: 8px;"></span></label>
+                <label class="option-label"><input type="radio" name="q16" value="B"><span class="option-text">B. <img
+                            src="images/16b.png" alt="Blok Angka 0"
+                            style="vertical-align: middle; max-height: 35px; margin-left: 8px;"></span></label>
+                <label class="option-label"><input type="radio" name="q16" value="B"><span class="option-text">C. <img
+                            src="images/17c.png" alt="Blok Angka 0"
+                            style="vertical-align: middle; max-height: 35px; margin-left: 8px;"></span></label>
+            </div>
+            <div class="question-card">
+                <p class="question-text">17. Perhatikan gambar blok di bawah ini:</p>
+                <img src="images/soal17.png" alt="Soal 17"
+                    style="max-width: 100%; margin-bottom: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <p style="margin-bottom: 15px;">Berdasarkan nama tag yang digunakan, blok apa yang paling tepat untuk
+                    dipasangkan ke dalam socket <b>valueIfTagNotThere</b>?</p>
+                <label class="option-label"><input type="radio" name="q17" value="A"><span class="option-text">A. <img
+                            src="images/16a.png" alt="Opsi A"
+                            style="vertical-align: middle; max-height: 35px; margin-left: 8px;"></span></label>
+                <label class="option-label"><input type="radio" name="q17" value="B"><span class="option-text">B. <img
+                            src="images/16b.png" alt="Opsi B"
+                            style="vertical-align: middle; max-height: 35px; margin-left: 8px;"></span></label>
+                <label class="option-label"><input type="radio" name="q17" value="C"><span class="option-text">C. <img
+                            src="images/17c.png" alt="Opsi C"
+                            style="vertical-align: middle; max-height: 35px; margin-left: 8px;"></span></label>
+            </div>
+            <button type="submit" class="btn-submit">Selesaikan Quiz</button>
+        </form>
+    </div>
+
+    <div class="walking-bunny"></div>
+    <div class="jumping-bunny"></div>
+
+    <script>
+        const bunnies = [
+            { element: document.querySelector('.walking-bunny'), isWalk: true },
+            { element: document.querySelector('.jumping-bunny'), isWalk: false }
+        ];
+
+        bunnies.forEach(bunny => {
+            let el = bunny.element;
+            let isWalk = bunny.isWalk;
+            let isDragging = false;
+            let isFalling = false;
+            let offsetX = 0;
+            let offsetY = 0;
+            let vy = 0;
+            let gravity = 0.6;
+            let animFrame;
+
+            el.addEventListener('mousedown', function (e) {
+                if (isFalling) return;
+                isDragging = true;
+                el.style.cursor = 'grabbing';
+
+                let rect = el.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+
+                if (isWalk) {
+                    el.style.animation = 'gantiKakiJalan 0.3s infinite';
+                } else {
+                    el.style.animation = 'gantiGambarLompat 1.2s infinite';
+                }
+
+                el.style.bottom = 'auto';
+                el.style.right = 'auto';
+                el.style.left = (e.clientX - offsetX) + 'px';
+                el.style.top = (e.clientY - offsetY) + 'px';
+
+                cancelAnimationFrame(animFrame);
+            });
+
+            document.addEventListener('mousemove', function (e) {
+                if (!isDragging) return;
+
+                let rect = el.getBoundingClientRect();
+                let newLeft = e.clientX - offsetX;
+                let newTop = e.clientY - offsetY;
+
+                let maxLeft = window.innerWidth - rect.width;
+                let maxTop = window.innerHeight - rect.height;
+
+                newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                newTop = Math.max(0, Math.min(newTop, maxTop));
+
+                el.style.left = newLeft + 'px';
+                el.style.top = newTop + 'px';
+            });
+
+            document.addEventListener('mouseup', function () {
+                if (!isDragging) return;
+                isDragging = false;
+                el.style.cursor = 'grab';
+                isFalling = true;
+                vy = 0;
+                fall();
+            });
+
+            function fall() {
+                let rect = el.getBoundingClientRect();
+                let floor = window.innerHeight - rect.height;
+                vy += gravity;
+                let newTop = rect.top + vy;
+
+                if (newTop >= floor) {
+                    el.style.top = 'auto';
+                    el.style.bottom = '0px';
+                    isFalling = false;
+
+                    if (isWalk) {
+                        el.style.animation = 'patroliKanan 6s linear infinite, gantiKakiJalan 0.3s infinite';
+                    } else {
+                        el.style.animation = 'gerakLompat 1.2s cubic-bezier(0.28, 0.84, 0.42, 1) infinite, gantiGambarLompat 1.2s infinite';
+                    }
+                } else {
+                    el.style.top = newTop + 'px';
+                    animFrame = requestAnimationFrame(fall);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
